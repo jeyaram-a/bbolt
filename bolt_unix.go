@@ -21,6 +21,9 @@ func flock(db *DB, exclusive bool, timeout time.Duration) error {
 		t = time.Now()
 	}
 	fd := db.file.Fd()
+	if exclusive {
+		fd = db.writeLockFile.Fd()
+	}
 	flag := syscall.LOCK_NB
 	if exclusive {
 		flag |= syscall.LOCK_EX

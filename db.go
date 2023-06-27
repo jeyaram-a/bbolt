@@ -110,9 +110,10 @@ type DB struct {
 	// Supported only on Unix via mlock/munlock syscalls.
 	Mlock bool
 
-	path     string
-	openFile func(string, int, os.FileMode) (*os.File, error)
-	file     *os.File
+	path          string
+	openFile      func(string, int, os.FileMode) (*os.File, error)
+	file          *os.File
+	writeLockFile *os.File
 	// `dataref` isn't used at all on Windows, and the golangci-lint
 	// always fails on Windows platform.
 	//nolint
@@ -210,6 +211,15 @@ func Open(path string, mode os.FileMode, options *Options) (*DB, error) {
 		return nil, err
 	}
 	db.path = db.file.Name()
+
+	if !db.readOnly {
+		lockFileName := fmt.Sprintf("%s_lock", path)
+		db.writeLockFile, err = os.OpenFile(lockFileName, os.O_CREATE, os.ModePerm)
+		if err != nil {
+			_ = db.close()
+			return nil, err
+		}
+	}
 
 	// Lock file so that other processes using Bolt in read-write mode cannot
 	// use the database  at the same time. This would cause corruption since
