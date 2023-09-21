@@ -165,9 +165,10 @@ func (db *DB) String() string {
 	return fmt.Sprintf("DB<%q>", db.path)
 }
 
-// Open creates and opens a database at the given path.
-// If the file does not exist then it will be created automatically.
+// Open creates and opens a database at the given path with a given file mode.
+// If the file does not exist then it will be created automatically with a given file mode.
 // Passing in nil options will cause Bolt to open the database with the default options.
+// Note: For read/write transactions, ensure the owner has write permission on the created/opened database file, e.g. 0600
 func Open(path string, mode os.FileMode, options *Options) (*DB, error) {
 	db := &DB{
 		opened: true,
@@ -1217,8 +1218,7 @@ func (db *DB) freepages() []common.Pgid {
 // Options represents the options that can be set when opening a database.
 type Options struct {
 	// Timeout is the amount of time to wait to obtain a file lock.
-	// When set to zero it will wait indefinitely. This option is only
-	// available on Darwin and Linux.
+	// When set to zero it will wait indefinitely.
 	Timeout time.Duration
 
 	// Sets the DB.NoGrowSync flag before memory mapping the file.

@@ -461,7 +461,6 @@ func TestCompactCommand_Run(t *testing.T) {
 	if err := binary.Read(crypto.Reader, binary.BigEndian, &s); err != nil {
 		t.Fatal(err)
 	}
-	rand.Seed(s)
 
 	dstdb := btesting.MustCreateDB(t)
 	dstdb.Close()
@@ -583,7 +582,7 @@ func fillBucket(b *bolt.Bucket, prefix []byte) error {
 }
 
 func chkdb(path string) ([]byte, error) {
-	db, err := bolt.Open(path, 0666, &bolt.Options{ReadOnly: true})
+	db, err := bolt.Open(path, 0600, &bolt.Options{ReadOnly: true})
 	if err != nil {
 		return nil, err
 	}
